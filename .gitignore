@@ -1,0 +1,27 @@
+# --- Live application data (generated on first run from data/seed_tasks.json) ---
+# This holds the user's actual task state and completion history. It is NOT
+# committed: each Pi maintains its own. To reset to factory defaults, delete it
+# and restart the app. The temp files below are written during atomic saves.
+data/tasks.json
+data/.tmp-*
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# --- Unrelated project living in the same directory (not part of this repo) ---
+sports_schedule/
+
+# --- Claude Code local preview/launch config ---
+.claude/
+
+# --- OS / editor cruft ---
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/

@@ -1,0 +1,28 @@
+[Unit]
+Description=Home Maintenance Dashboard kiosk (cage + Chromium)
+# Start after the backend and after a basic login session is available.
+After=systemd-user-sessions.service home-dashboard.service getty@tty1.service
+Wants=home-dashboard.service
+# Take over tty1 instead of the login getty.
+Conflicts=getty@tty1.service
+
+[Service]
+Type=simple
+User=__USER__
+# `cage` is a minimal single-application Wayland compositor -- it gives us a
+# full-screen kiosk with no window manager, taskbar, or desktop at all.
+# `-s` enables server-side decorations off / single app; we then run our
+# launcher which waits for the backend and execs Chromium in --kiosk mode.
+ExecStart=/usr/bin/cage -s -- __APPDIR__/deploy/start-kiosk.sh
+Restart=always
+RestartSec=5
+# Grab the physical console so cage can open the display.
+TTYPath=/dev/tty1
+StandardInput=tty
+StandardOutput=journal
+StandardError=journal
+PAMName=login
+UtmpIdentifier=tty1
+
+[Install]
+WantedBy=graphical.target

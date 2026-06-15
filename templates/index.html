@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=1024, height=600, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Home Maintenance</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <!-- Top bar -------------------------------------------------------------- -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <h1 id="view-title">Home Maintenance</h1>
+      <span id="today-label" class="today"></span>
+    </div>
+    <nav class="topbar-nav">
+      <button class="navbtn" data-view="dashboard">Due Soon</button>
+      <button class="navbtn" data-view="upcoming">Upcoming</button>
+      <button class="navbtn" data-view="history">Log</button>
+      <button class="navbtn icon" data-view="settings" aria-label="Settings">&#9881;</button>
+    </nav>
+  </header>
+
+  <!-- Main scroll region --------------------------------------------------- -->
+  <main id="main"></main>
+
+  <!-- Detail / dialog overlay --------------------------------------------- -->
+  <div id="overlay" class="overlay hidden">
+    <div id="overlay-card" class="overlay-card"></div>
+  </div>
+
+  <!-- Toast --------------------------------------------------------------- -->
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

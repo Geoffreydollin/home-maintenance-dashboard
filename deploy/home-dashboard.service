@@ -1,0 +1,15 @@
+[Unit]
+Description=Home Maintenance Dashboard (Flask backend)
+After=network.target
+
+[Service]
+Type=simple
+User=__USER__
+WorkingDirectory=__APPDIR__
+ExecStart=__APPDIR__/.venv/bin/python __APPDIR__/app.py
+Restart=on-failure
+RestartSec=3
+# The app only binds to 127.0.0.1, so it is never exposed off the device.
+
+[Install]
+WantedBy=multi-user.target
