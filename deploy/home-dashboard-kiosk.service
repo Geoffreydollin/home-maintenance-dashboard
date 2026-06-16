@@ -25,4 +25,4 @@ PAMName=login
 UtmpIdentifier=tty1
 
 [Install]
-WantedBy=graphical.target
+WantedBy=multi-user.target
