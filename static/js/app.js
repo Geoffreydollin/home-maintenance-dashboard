@@ -304,7 +304,21 @@ function openDetail(taskId) {
 
   if (task.video_url) {
     const v = el(`<button class="btn video">▶ Watch how-to video</button>`);
-    v.addEventListener("click", () => window.open(task.video_url, "_blank", "noopener"));
+    v.addEventListener("click", () => {
+      const idMatch = task.video_url.match(/(?:v=|youtu\.be\/)([\w-]+)/);
+      const embedId = idMatch ? idMatch[1] : null;
+      if (!embedId) { window.open(task.video_url, "_blank", "noopener"); return; }
+      const wrap = el(`<div class="video-embed"></div>`);
+      const frame = document.createElement("iframe");
+      frame.src = `https://www.youtube.com/embed/${embedId}?autoplay=1`;
+      frame.allow = "autoplay; encrypted-media; picture-in-picture";
+      frame.allowFullscreen = true;
+      wrap.appendChild(frame);
+      const closeBtn = el(`<button class="btn ghost video-embed-close">&larr; Back to task</button>`);
+      closeBtn.addEventListener("click", () => { wrap.remove(); closeBtn.remove(); });
+      actions.parentElement.appendChild(wrap);
+      actions.parentElement.appendChild(closeBtn);
+    });
     actions.appendChild(v);
   }
 
