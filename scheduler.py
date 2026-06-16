@@ -19,11 +19,15 @@ Frequencies and how `next_due` is computed after a task is completed:
 Seeding (first run, relative to *today*, not a hard-coded date):
 
     * tasks with a schedule   -> next occurrence of the scheduled day(s) on/after today
-    * tasks without a schedule -> today (so everything is visible to triage)
+    * tasks without a schedule -> a date spread across the task's frequency
+                                  window (see SEED_SPREAD_DAYS), deterministic
+                                  per task id (so a fresh install does not show
+                                  every task as due on the same first day)
     * as_needed tasks          -> no next_due (hidden until manually triggered)
 """
 
 from __future__ import annotations
+import random
 
 import calendar
 from datetime import date, timedelta
@@ -118,30 +122,53 @@ def compute_next_due(task: dict, completion_date: date) -> date | None:
     return completion_date + timedelta(days=7)
 
 
+# How many days out an *unscheduled* task may land on first seed, by
+# frequency, so a fresh install doesn't dump every task onto day one.
+# The first occurrence is randomized (seeded by task id, so it is stable
+# across restarts) within this window; every completion after that follows
+# the normal recurrence math above.
+SEED_SPREAD_DAYS = {
+    "weekly": 7,
+    "twice_weekly": 4,
+    "monthly": 30,
+    "quarterly": 90,
+    "biannual": 180,
+    "annual": 365,
+}
+
+
 def seed_next_due(task: dict, today: date) -> date | None:
     """Compute the initial `next_due` for a task on first run.
 
     * scheduled tasks   -> next occurrence of the scheduled day(s) on/after today
-    * unscheduled tasks -> today (visible immediately for triage)
+    * unscheduled tasks -> a date spread across the task's own frequency
+      window (see SEED_SPREAD_DAYS), deterministic per task id, so a fresh
+      install doesn't show every task as due on the same first day
     * as_needed tasks   -> None (hidden until manually triggered)
     """
     frequency = task.get("frequency")
     schedule = task.get("schedule") or {}
-
     if frequency == "as_needed":
         return None
-
     if frequency == "weekly":
         day_name = schedule.get("day_of_week")
         if day_name and day_name in WEEKDAYS:
             return next_weekday(today, WEEKDAYS[day_name], inclusive=True)
-        return today
-
+        return _seeded_spread_date(task, today, frequency)
     if frequency == "twice_weekly":
         days = schedule.get("days_of_week") or []
         if days:
             return _next_from_weekdays(today, days, inclusive=True)
-        return today
+        return _seeded_spread_date(task, today, frequency)
+    # monthly / quarterly / biannual / annual with no schedule.
+    return _seeded_spread_date(task, today, frequency)
 
-    # monthly / quarterly / biannual / annual with no schedule -> due today.
-    return today
+
+def _seeded_spread_date(task: dict, today: date, frequency: str) -> date:
+    """Pick a stable, task-specific date within the frequency's spread
+    window, so first-run seeding doesn't bunch every task onto today.
+    """
+    span = SEED_SPREAD_DAYS.get(frequency, 7)
+    rng = random.Random(task.get("id", frequency))
+    offset = rng.randint(1, span)
+    return today + timedelta(days=offset)
